@@ -5,8 +5,9 @@
 ---
 
 ## Overview
-R.O.B.E.R.T is a robotics project designed to showcase the integration of **Raspberry Pi** with **LEGO components** and **AI-powered image recognition**, controlled through a web dashboard.
-This system explores the synergy between hardware and software in an engaging and educational way.
+R.O.B.E.R.T is a robotics project designed to showcase the integration of **Raspberry Pi** with **LEGO components** and **AI-powered image recognition**, controlled through a web dashboard. This system explores the synergy between hardware and software in an engaging and educational way.
+
+For a user interface to monitor and control R.O.B.E.R.T, check out the [R.O.B.E.R.T Control Dashboard project](https://github.com/r-/robert-control).
 
 ---
 
@@ -30,3 +31,16 @@ This system explores the synergy between hardware and software in an engaging an
 
 ---
 
+## Setup
+
+### Prerequisites
+- Raspberry Pi with Raspberry Pi OS installed
+- Python 3.x and required packages (see requirements.txt)
+- PHP and a web server (e.g., Apache) for hosting the control dashboard
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/r-/robert.git
+   cd robert
