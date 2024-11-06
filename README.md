@@ -4,9 +4,10 @@ Robotic Overlord Bent on Enslaving and Ruling Technology
 - You can call me Robby.
 
 Overview
-R.O.B.E.R.T is a robotics project designed to showcase the integration of Raspberry Pi with LEGO components and AI-powered image recognition, controlled through an intuitive web dashboard. This powerful system is built to demonstrate the synergy between hardware and software in a fun and educational way.
+R.O.B.E.R.T is a robotics project designed to showcase the integration of Raspberry Pi with LEGO components and AI-powered image recognition, controlled through an web dashboard. This powerful system is built to demonstrate the synergy between hardware and software in a fun and educational way.
 
 Built With:
+
 Hardware
 
 - Raspberry Pi – The core controller for R.O.B.E.R.T's operations
