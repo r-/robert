@@ -5,7 +5,8 @@
 ---
 
 ## Overview
-R.O.B.E.R.T is a robotics project designed to showcase the integration of **Raspberry Pi** with **LEGO components** and **AI-powered image recognition**, controlled through a web dashboard. This powerful system demonstrates the synergy between hardware and software in an engaging and educational way.
+R.O.B.E.R.T is a robotics project designed to showcase the integration of **Raspberry Pi** with **LEGO components** and **AI-powered image recognition**, controlled through a web dashboard.
+This system explores the synergy between hardware and software in an engaging and educational way.
 
 ---
 
