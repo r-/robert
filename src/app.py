@@ -62,7 +62,7 @@ def control_motor():
         "target_id": int(target_id) if target_id is not None else None
     })
 
-@app.route('/video_feed')
+@app.route('/video_feed', methods=['POST'])
 def video_feed():
     def generate():
         global target_id
