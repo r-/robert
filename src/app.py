@@ -32,27 +32,27 @@ def control_motor():
 
     if action == 'start':
         # Stop both motors first to reset
-        motor_a.stop()
-        motor_d.stop()
+        motor_a.pwm(0)
+        motor_d.pwm(0)
 
         if 'move_forward' in commands:
-            motor_a.start(50)
-            motor_d.start(-50)
+            motor_a.pwm(-1)
+            motor_d.pwm(1)
         elif 'move_backward' in commands:
-            motor_a.start(-50)
-            motor_d.start(50)
+            motor_a.pwm(1)
+            motor_d.pwm(-1)
 
         if 'move_left' in commands:
-            motor_a.start(50)
-            motor_d.start(50)
+            motor_a.pwm(-1)
+            motor_d.pwm(-1)
         elif 'move_right' in commands:
-            motor_a.start(-50)
-            motor_d.start(-50)
+            motor_a.pwm(1)
+            motor_d.pwm(1)
 
     elif action == 'stop':
         print("Stopping motors")
-        motor_a.stop()
-        motor_d.stop()
+        motor_a.pwm(0)
+        motor_d.pwm(0)
 
     # Ensure target_id is cast to a standard int if it exists
     return jsonify({
@@ -61,6 +61,7 @@ def control_motor():
         "action": action,
         "target_id": int(target_id) if target_id is not None else None
     })
+    
 
 @app.route('/video_feed')
 def video_feed():
