@@ -8,11 +8,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize motors
-# Right engine (forward is positive)
-motor_a = Motor('A')
-
-# Left engine (forward is negative due to orientation)
-motor_d = Motor('D')
+motor_a = Motor('A')  # Right engine (forward is positive)
+motor_d = Motor('D')  # Left engine (forward is negative due to orientation)
 
 # Global variable for the target ID
 target_id = None
@@ -24,56 +21,44 @@ parameters = aruco.DetectorParameters()
 
 @app.route('/control_motor', methods=['POST'])
 def control_motor():
-    global target_id
-    commands = request.json.get('commands', [])
-    action = request.json.get('action', 'stop')
+    """
+    Endpoint to control the motors based on joystick input.
+    Accepts a JSON payload with 'left' and 'right' motor speeds.
+    """
+    data = request.get_json()
+    if not data or 'left' not in data or 'right' not in data:
+        return jsonify({"status": "error", "message": "Invalid motor speed data"}), 400
 
-    print(f"Received commands: {commands}, action: {action}")
+    # Retrieve motor speeds from the request
+    left_speed = data['left']
+    right_speed = data['right']
 
-    if action == 'start':
-        # Stop both motors first to reset
-        motor_a.pwm(0)
-        motor_d.pwm(0)
+    # Print received motor speeds for debugging
+    print(f"Received motor speeds - Left: {left_speed}, Right: {right_speed}")
 
-        if 'move_forward' in commands:
-            motor_a.pwm(-1)
-            motor_d.pwm(1)
-        elif 'move_backward' in commands:
-            motor_a.pwm(1)
-            motor_d.pwm(-1)
-
-        if 'move_left' in commands:
-            motor_a.pwm(-1)
-            motor_d.pwm(-1)
-        elif 'move_right' in commands:
-            motor_a.pwm(1)
-            motor_d.pwm(1)
-
-    elif action == 'stop':
-        print("Stopping motors")
-        motor_a.pwm(0)
-        motor_d.pwm(0)
-
-    # Ensure target_id is cast to a standard int if it exists
-    return jsonify({
-        "status": "success",
-        "commands": commands,
-        "action": action,
-        "target_id": int(target_id) if target_id is not None else None
-    })
-    
+    # Control the motors with the received speeds
+    try:
+        motor_a.pwm(-right_speed)  # Right motor (invert speed if necessary)
+        motor_d.pwm(left_speed)    # Left motor (invert speed if necessary)
+        return jsonify({"status": "success", "left": left_speed, "right": right_speed})
+    except Exception as e:
+        print(f"Error controlling motors: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/video_feed')
 def video_feed():
+    """
+    Stream the camera feed with ArUco marker detection.
+    """
     def generate():
         global target_id
-        bounding_box_margin = 60  # Adjust the margin to make the square larger
+        bounding_box_margin = 60
         while True:
             ret, frame = camera.read()
             if not ret:
                 break
 
-            # Frame dimensions and cross position
+            # Frame dimensions and center coordinates
             height, width, _ = frame.shape
             center_x, center_y = width // 2, height // 2
 
@@ -81,39 +66,29 @@ def video_feed():
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             corners, ids, _ = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
 
-            target_id = None  # Reset target_id for each frame
-            cross_color = (0, 255, 0)  # Default cross color
+            target_id = None
+            cross_color = (0, 255, 0)
 
             if ids is not None:
                 for i, marker_id in enumerate(ids):
-                    # Draw rectangle around marker with expanded margin
                     pts = corners[i][0].astype(int)
                     x_min, y_min = pts.min(axis=0)
                     x_max, y_max = pts.max(axis=0)
 
-                    # Expand the bounding box by the margin
-                    x_min = max(0, x_min - bounding_box_margin)
-                    y_min = max(0, y_min - bounding_box_margin)
-                    x_max = min(width, x_max + bounding_box_margin)
-                    y_max = min(height, y_max + bounding_box_margin)
-
-                    # Draw the expanded rectangle around the marker
+                    # Draw rectangle around the marker
                     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
-
-                    # Display marker ID
                     cv2.putText(frame, f"ID: {marker_id[0]}", (x_min, y_min - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-                    # Check if the cross is inside the expanded marker rectangle
+                    # Check if crosshair is inside the marker
                     if x_min < center_x < x_max and y_min < center_y < y_max:
-                        cross_color = (0, 0, 255)  # Change cross color to red
-                        target_id = int(marker_id[0])  # Cast to standard int
+                        cross_color = (0, 0, 255)
+                        target_id = int(marker_id[0])
 
-            # Draw green cross in the center of the frame
+            # Draw crosshair
             cv2.line(frame, (center_x - 15, center_y), (center_x + 15, center_y), cross_color, 2)
             cv2.line(frame, (center_x, center_y - 15), (center_x, center_y + 15), cross_color, 2)
 
-            # Encode frame as JPEG
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
@@ -123,8 +98,7 @@ def video_feed():
 @app.route('/activate', methods=['POST'])
 def activate():
     """
-    Handles activation requests. If a target ID is detected,
-    it will return it; otherwise, it indicates no target was found.
+    Handles activation requests based on detected ArUco markers.
     """
     global target_id
     if target_id is not None:
@@ -137,4 +111,3 @@ def activate():
 if __name__ == "__main__":
     print("Starting Flask app on http://0.0.0.0:5000")
     app.run(host='0.0.0.0', port=5000)
-
