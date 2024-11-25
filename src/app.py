@@ -38,8 +38,8 @@ def control_motor():
 
     # Control the motors with the received speeds
     try:
-        motor_a.pwm(-right_speed)  # Right motor (invert speed if necessary)
-        motor_d.pwm(left_speed)    # Left motor (invert speed if necessary)
+        motor_a.pwm(right_speed)  # Right motor (invert speed if necessary)
+        motor_d.pwm(-left_speed)    # Left motor (invert speed if necessary)
         return jsonify({"status": "success", "left": left_speed, "right": right_speed})
     except Exception as e:
         print(f"Error controlling motors: {e}")
