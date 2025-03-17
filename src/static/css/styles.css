@@ -1,0 +1,122 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.video-container {
+    width: 640px;
+    height: 480px;
+    border: 5px solid #ddd;
+}
+
+.control-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.controls {
+    display: grid;
+    grid-template-areas: 
+        ". forward . shoot"
+        "left stop right shoot"
+        ". backward . shoot";
+    gap: 10px;
+    align-items: center;
+}
+
+.controls button {
+    padding: 20px;
+    width: 100px;
+    height: 50px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.controls button:active,
+.controls button.active {
+    background-color: #0056b3;
+}
+
+#forward { grid-area: forward; }
+#backward { grid-area: backward; }
+#left { grid-area: left; }
+#right { grid-area: right; }
+#stop { grid-area: stop; }
+#shoot { grid-area: shoot; }
+
+.terminal {
+    width: 100%;
+    height: 150px;
+    background-color: black;
+    color: lime;
+    font-family: monospace;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+}
+
+.input-container input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    flex-grow: 1;
+}
+
+.input-container button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+p {
+    margin: 5px 0 10px;
+}
+
+.hp-container {
+    margin: 10px;
+    text-align: center;
+  }
+  
+#hp-bar {
+    width: 100%;
+    height: 20px;
+  }
+  
+#hp-text {
+    font-size: 16px;
+    color: #333;
+  }
+  
