@@ -1,18 +1,44 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
     margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 20px;
+    background-color: black;
+    color: white;
+}
+
+#config-panel
+{
+    position: absolute;
+    top: 0%;
+    right: 0%;
+    padding: 60px;
+}
+
+#joystick-container
+{
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    bottom: 0%;
+    right: 0%;
+    padding: 60px;
 }
 
 .video-container {
-    width: 640px;
-    height: 480px;
-    border: 5px solid #ddd;
+    z-index: -1;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+#video-stream
+{
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
 }
 
 .control-section {
@@ -60,7 +86,26 @@ body {
 #stop { grid-area: stop; }
 #shoot { grid-area: shoot; }
 
-.terminal {
+.terminal
+{
+    color: rgb(204, 53, 53);
+    overflow-y: auto;
+    height: 100%;
+}
+
+.terminal-holder {
+    display:flex;
+    flex-direction: column;
+    width: 300px;
+    height: 250px;
+    position: absolute;
+    bottom: 0%;
+    left: 0%;
+    background-color: rgba(0, 0, 0, 0.644);
+    padding: 60px;
+
+
+    /*
     width: 100%;
     height: 150px;
     background-color: black;
@@ -69,6 +114,7 @@ body {
     padding: 10px;
     border-radius: 5px;
     overflow-y: auto;
+    */
 }
 
 .input-container {
@@ -80,7 +126,6 @@ body {
 
 .input-container input {
     padding: 10px;
-    font-size: 16px;
     border-radius: 5px;
     border: 1px solid #ccc;
     flex-grow: 1;
@@ -88,7 +133,6 @@ body {
 
 .input-container button {
     padding: 10px 20px;
-    font-size: 16px;
     border-radius: 5px;
     border: none;
     background-color: #007bff;
@@ -105,18 +149,34 @@ p {
     margin: 5px 0 10px;
 }
 
-.hp-container {
-    margin: 10px;
-    text-align: center;
+.stat-container {
+    padding: 60px;
+    margin: 0;
+    float: left;
+    width: 200px;
   }
+
+.stat-sub-container
+{
+    width: 100%;
+    height: 100%;
+}
+
   
 #hp-bar {
     width: 100%;
     height: 20px;
   }
-  
-#hp-text {
-    font-size: 16px;
-    color: #333;
+  #cooldown-bar {
+    width: 100%;
+    height: 20px;
   }
+
+.container
+{
+    background: linear-gradient(45deg, #ff0033, #ff6633);
+    border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 0, 51, 0.2);
+  padding: 5px;
+}
   

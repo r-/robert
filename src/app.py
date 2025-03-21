@@ -6,6 +6,7 @@ import socket
 import cv2.aruco as aruco
 from threading import Thread, Lock
 import time
+import psutil
 import pyttsx3
 
 app = Flask(__name__)
@@ -45,6 +46,39 @@ def camera_reader():
 camera_thread = Thread(target=camera_reader, daemon=True)
 camera_thread.start()
 
+
+# Global variables to store last reading and timestamp
+last_net_io = psutil.net_io_counters()
+last_time = time.time()
+
+@app.route('/network_speed')
+def network_speed():
+    global last_net_io, last_time
+
+    current_net_io = psutil.net_io_counters()
+    current_time = time.time()
+
+    # Calculate time difference
+    time_diff = current_time - last_time
+    if time_diff == 0:
+        time_diff = 1  # Prevent division by zero
+
+    # Calculate differences
+    bytes_sent = current_net_io.bytes_sent - last_net_io.bytes_sent
+    bytes_recv = current_net_io.bytes_recv - last_net_io.bytes_recv
+
+    sent_mbps = (bytes_sent * 8) / (time_diff * 1_000_000)
+    recv_mbps = (bytes_recv * 8) / (time_diff * 1_000_000)
+
+    # Update last readings
+    last_net_io = current_net_io
+    last_time = current_time
+
+    return jsonify({
+        "upload_mbps": round(sent_mbps, 2),
+        "download_mbps": round(recv_mbps, 2)
+    })
+
 @app.route('/control_motor', methods=['POST'])
 def control_motor():
     """
@@ -66,19 +100,75 @@ def control_motor():
         print(f"Error controlling motors: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+# Global variables for framerate and JPEG quality
+target_fps = 60
+jpeg_quality = 10
+
+@app.route('/set_config', methods=['POST'])
+def set_config():
+    global target_fps, jpeg_quality
+    data = request.get_json()
+
+    # Get the new framerate and quality from the request
+    target_fps = int(data.get('framerate', target_fps))
+    jpeg_quality = int(data.get('quality', jpeg_quality))
+
+    return jsonify({
+        "status": "success",
+        "framerate": target_fps,
+        "quality": jpeg_quality
+    })
+
+@app.route('/get_config')
+def get_config():
+    return jsonify({
+        "framerate": target_fps,
+        "quality": jpeg_quality
+    })
+
+import time
+import numpy as np
 def generate_mjpeg():
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 15]  # Lower quality = faster, smaller
+    global target_fps, jpeg_quality
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality]  # Use dynamic JPEG quality
+    target_size = (640, 480)  # Desired frame resolution
+    frame_time = 1.0 / target_fps  # Time per frame in seconds
+
+    prev_frame_time = time.time()  # Time of the last frame sent
+    prev_frame = None  # Store the previous frame for difference comparison
 
     while True:
+        current_time = time.time()
+        if current_time - prev_frame_time < frame_time:
+            continue  # Wait for the right time to process the next frame
+
         with frame_lock:
             frame = latest_frame.copy() if latest_frame is not None else None
+        
         if frame is None:
-            continue
-        ret, buffer = cv2.imencode('.jpg', frame, encode_param)
+            continue  # Skip if no valid frame is available
+
+        resized_frame = cv2.resize(frame, target_size)
+
+        # Frame difference check
+        if prev_frame is not None:
+            frame_diff = cv2.absdiff(resized_frame, prev_frame)
+            non_zero_count = np.count_nonzero(frame_diff)
+            if non_zero_count < resized_frame.size * 0.01:
+                prev_frame_time = current_time
+                continue
+
+        prev_frame = resized_frame  # Update previous frame
+
+        ret, buffer = cv2.imencode('.jpg', resized_frame, encode_param)
         if not ret:
-            continue
+            continue  # Skip if encoding fails
+
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+
+        prev_frame_time = current_time
+
 
 @app.route('/video_feed')
 def video_feed():
