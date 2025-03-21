@@ -15,6 +15,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 # Initialize motors
 motor_a = Motor('A')  # Right engine (forward is positive)
 motor_d = Motor('D')  # Left engine (forward is negative due to orientation)
+motor_c = Motor('C')
 
 # Global variable for the target ID
 target_id = None
@@ -78,6 +79,24 @@ def network_speed():
         "upload_mbps": round(sent_mbps, 2),
         "download_mbps": round(recv_mbps, 2)
     })
+
+@app.route('/control_camera', methods=['POST'])
+def control_camera():
+    data = request.get_json()
+    if not data or 'up' not in data:
+        return jsonify({"status": "error", "message": "Invalid camera speed data"}), 400
+    camera_speed = float(data['up'])
+    if camera_speed <= 0:
+        camera_speed *= 0.4
+    else:
+        camera_speed = 0.2
+    try:
+        motor_c.pwm(camera_speed)
+        return jsonify({"status": "success", "up/down": camera_speed})
+    except Exception as e:
+        print(f"Error controlling camera: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route('/control_motor', methods=['POST'])
 def control_motor():

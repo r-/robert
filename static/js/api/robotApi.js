@@ -25,6 +25,31 @@ const RobotApi = (() => {
         xhr.send(data);
     };    
 
+    /**
+     * Sends camera speed commands to the robot server.
+     * @param {Object} cameraSpeed 
+     */
+    const sendCameraCommand = (up) => {
+        console.log("Sending camera speeds:", up);
+    
+        const data = JSON.stringify({ up });
+    
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `/control_camera`, true);  // RELATIVE URL - no CORS issues
+        xhr.setRequestHeader("Content-Type", "application/json");
+    
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    console.log("Motor command response:", JSON.parse(xhr.responseText));
+                } else {
+                    console.error(`Motor API error: ${xhr.status} - ${xhr.statusText}`);
+                }
+            }
+        };
+    
+        xhr.send(data);
+    };    
 
     activateDelay = 500 // Delay (in ms) before activate command can be used again
     cooldown = false // Assume the activate isn't on delay
@@ -64,5 +89,5 @@ const RobotApi = (() => {
         }, activateDelay)
     }
 
-    return { sendMotorCommand, activate };
+    return { sendMotorCommand, sendCameraCommand, activate };
 })();
