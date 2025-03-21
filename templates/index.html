@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.O.B.E.R.T - Control Center</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Include Nipple.js CDN !-->
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.2/dist/nipplejs.min.js"></script>
+</head>
+
+<body>
+
+    <div id="joystick-container"></div>
+    <div class="video-container">
+        <img src="/video_feed" alt="Video Stream">
+    </div>
+    <div id="config-panel" class="container">
+        <h2>Configure Robot</h2>
+        
+        <div>
+            <p>Framerate:</p>
+            <input type="range" id="framerate-slider" min="10" max="60" value="60">
+            <span id="framerate-value">60 FPS</span>
+        </div>
+    
+        <div>
+            <p>JPEG Quality:</p>
+            <input type="range" id="quality-slider" min="1" max="100" value="10">
+            <span id="quality-value">10</span>
+        </div>
+        
+        <h3>Network Speed:</h3>
+        <p>Upload: <span id="upload-speed">0 Mbps</span></p>
+        <p>Download: <span id="download-speed">0 Mbps</span></p>
+    
+        <button id="apply-config">Apply Config</button>
+    </div>
+
+    <!--
+    <div class="control-section">
+        <h1>R.O.B.E.R.T - Control Center</h1>
+        <p>Use the controller to control the motor, and press the R2 button to interact with a target:</p>
+        <div class="controls">
+            <button id="forward" onclick="handleCommand('1', '1')">Forward</button>
+            <button id="backward" onclick="handleCommand('-1', '-1')">Backward</button>
+            <button id="left" onclick="handleCommand('1', '-1')">Left</button>
+            <button id="right" onclick="handleCommand('-1', '1')">Right</button>
+            <button id="stop" onclick="handleCommand('0', '0')">Stop</button>
+            <button id="activate" onclick="handleActivate()">Activate</button>
+            <button id="restart-btn">Restart Server</button>
+        </div>-->
+    <div class="terminal-holder">
+        <div class="terminal" id="terminal">
+            <!-- Terminal output will appear here -->
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="command-input"
+                placeholder="Enter a command (e.g., /login <server_ip> <player_id>)" />
+            <button id="send-command" onclick="handleSendCommand()">Send</button>
+        </div>
+    </div>
+
+    <div class="stat-container">
+        <div class="stat-sub-container">
+            <label for="hp-bar">Hit Points:</label>
+            <span id="hp-text">10/10</span>
+            <progress id="hp-bar" value="100" max="100"></progress>
+        </div>
+        <div class="stat-sub-container">
+            <label for="cooldown-bar">Cooldown:</label>
+            <span id="cooldown-text">?</span>
+            <progress id="cooldown-bar" value="100" max="100"></progress>
+        </div>
+    </div>
+
+    </div>
+
+    <script>
+        // Update the framerate and quality values displayed
+        document.getElementById('framerate-slider').addEventListener('input', function() {
+            document.getElementById('framerate-value').textContent = this.value + " FPS";
+        });
+    
+        document.getElementById('quality-slider').addEventListener('input', function() {
+            document.getElementById('quality-value').textContent = this.value;
+        });
+    
+        // Send the new configuration to the backend
+        document.getElementById('apply-config').addEventListener('click', function() {
+            const framerate = document.getElementById('framerate-slider').value;
+            const quality = document.getElementById('quality-slider').value;
+    
+            fetch('/set_config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    framerate: framerate,
+                    quality: quality
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Configuration updated:', data);
+                window.location.reload();  // Refresh the page to apply new settings
+            })
+            .catch(err => {
+                console.error('Error updating configuration:', err);
+            });
+        });
+    
+        // Fetch the current configuration settings and update the sliders
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch('/get_config')
+                .then(response => response.json())
+                .then(data => {
+                    const framerate = data.framerate;
+                    const quality = data.quality;
+    
+                    // Update sliders and values
+                    document.getElementById('framerate-slider').value = framerate;
+                    document.getElementById('quality-slider').value = quality;
+                    document.getElementById('framerate-value').textContent = framerate + " FPS";
+                    document.getElementById('quality-value').textContent = quality;
+                })
+                .catch(err => {
+                    console.error('Error fetching current config:', err);
+                });
+        });
+    </script>
+    <script>
+        const server_ip = "<?php echo $server_ip; ?>"; // Default server IP
+
+        // Create joystick nipple
+        var joystick = nipplejs.create({
+            zone: document.getElementById('joystick-container'),
+            mode: 'static',
+            position: { left: '50%', top: '50%' },
+            size: 200,
+            color: 'white'
+        });
+
+        joystick.on('move', function (evt, data) {
+            const x = data.vector.x;
+            const y = data.vector.y;
+
+            const magnitude = Math.sqrt(x * x + y * y);
+            if (magnitude < 0.2) {
+                handleCommand(0, 0);
+                return;
+            }
+
+            handleCommand(x, y);
+        });
+        joystick.on('end', function (evt, data) {
+            handleCommand(0, 0);
+        });
+
+        // Handle input for nipple
+        function HandleJoystick(x, y) {
+            let nipple = document.querySelector('.front'); // Select joystick knob
+            if (nipple) {
+                nipple.style.transform = `translate(${x * 25}px, ${y * 25}px)`;
+            }
+        }
+
+        /**
+         * Handles motor commands by calling RobotApi.sendMotorCommand
+         * and moves the joystick to a new position on the screen.
+         * @param {number} _left - The horizontal position between -1 and 1.
+         * @param {number} _right - The vertical position between -1 and 1.
+         */
+        function handleCommand(_left, _right) {
+            // Send the motor command to the robot API
+            RobotApi.sendMotorCommand(_left, _right);
+        }
+
+
+        /**
+         * Handles activation by calling RobotApi.activate
+         */
+        function handleActivate() {
+            console.log("Sending activation request...");
+            RobotApi.activate();
+        }
+
+        /**
+         * Handles manual command input for the game server.
+         */
+        function handleSendCommand() {
+            const commandInput = document.getElementById('command-input');
+            const command = commandInput.value.trim();
+
+            if (command) {
+                console.log(`Sending game server command: ${command}`);
+                GameServerApi.sendCommand(command)
+                    .then(response => {
+                        console.log("Game server response:", response);
+                        Terminal.log(`Server: ${response.message}`);
+                    })
+                    .catch(error => {
+                        console.error("Failed to send command to game server:", error);
+                        Terminal.log(`Error: ${error.message}`);
+                    });
+            } else {
+                console.warn("No command entered.");
+                Terminal.log("Please enter a command.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            UserControls.bindRobotControls();
+            Terminal.bindTerminalEvents();
+        });
+
+    </script>
+    <script>
+        function updateNetworkSpeed() {
+            fetch('/network_speed')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('upload-speed').textContent = data.upload_mbps + " Mbps";
+                    document.getElementById('download-speed').textContent = data.download_mbps + " Mbps";
+                })
+                .catch(err => console.error('Error fetching network speed:', err));
+        }
+
+        // Refresh speed every 2 seconds
+        setInterval(updateNetworkSpeed, 2000);
+
+        // Initial load
+        updateNetworkSpeed();
+    </script>
+
+    <script src="{{ url_for('static', filename='js/ui/infobox.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api/robotApi.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api/gameServerApi.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/userControls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/terminal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/gamepad.js') }}"></script>
+</body>
+
+</html>
