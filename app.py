@@ -257,7 +257,7 @@ def talk():
     #text = "This is a more natural sounding speech example using Google TTS."
     tts = gTTS(text=message, lang='en', slow=False)
     tts.save("output.mp3")
-    os.system("start output.mp3")  # Windows
+    os.system("mpg321 output.mp3")  # Windows
 
     # Return a JSON response
     return jsonify({"message": f"Spoken message: {message}"}), 200
