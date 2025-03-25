@@ -8,9 +8,13 @@ from threading import Thread, Lock
 import time
 import psutil
 import pyttsx3
+import logging
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 try:
     motor_a = Motor('A')  # Right engine (forward is positive)
@@ -279,7 +283,9 @@ def home():
     start_time = time.time()
     server_ip = get_server_ip()
     trueLatency = time.time() - start_time
+    print(f"New client connected to: {server_ip}")
     return render_template('index.html', server_ip=server_ip, latency=trueLatency)
 
 if __name__ == "__main__":
+    print(f"Successfully started.")
     app.run(host='0.0.0.0', port=5000, threaded=True)
