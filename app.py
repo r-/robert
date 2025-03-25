@@ -9,6 +9,8 @@ import time
 import psutil
 import pyttsx3
 import logging
+from gtts import gTTS
+import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -36,10 +38,6 @@ except Exception as e:
 
 # Global variable for the target ID
 target_id = None
-
-engine = pyttsx3.init()
-engine.setProperty('volume', 1)  # Volume: 0.0 to 1.0
-engine.setProperty('rate', 100)  # Speed: higher is faster
 
 # Initialize the camera
 camera = cv2.VideoCapture(0)
@@ -91,7 +89,6 @@ def camera_reader():
 # Start camera thread
 camera_thread = Thread(target=camera_reader, daemon=True)
 camera_thread.start()
-
 
 # Global variables to store last reading and timestamp
 last_net_io = psutil.net_io_counters()
@@ -257,11 +254,10 @@ def talk():
     if not message:
         return jsonify({"error": "No message provided"}), 400
 
-    # Convert the message to speech
-    engine.say(message)
-
-    # Wait until speaking is finished
-    engine.runAndWait()
+    #text = "This is a more natural sounding speech example using Google TTS."
+    tts = gTTS(text=message, lang='en', slow=False)
+    tts.save("output.mp3")
+    os.system("start output.mp3")  # Windows
 
     # Return a JSON response
     return jsonify({"message": f"Spoken message: {message}"}), 200
