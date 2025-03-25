@@ -44,5 +44,57 @@ const Terminal = (() => {
         });
     };
 
+    const parseCommand = (input) => {
+        const args = input.split(" ");
+        const command = args[0].toLowerCase();
+
+        switch (command) {
+            case "/say":
+                if (args.length < 2) {
+                    logToTerminal("Usage: /say <message>");
+                    return;
+                }
+                const message = args.slice(1).join(" ");
+                fetch('/say', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                })
+                .then(response => response.json())
+                .then(data => logToTerminal(`Bot: ${data.message}`))
+                .catch(error => logToTerminal(`Error sending message: ${error}`));
+                break;
+
+            case "/login":
+                if (args.length < 3) {
+                    logToTerminal("Usage: /login <server_ip> <player_id>");
+                    return;
+                }
+                serverIp = args[1];
+                const playerId = args[2];
+
+                logToTerminal(`Attempting to log in to ${serverIp} as Player ${playerId}...`);
+
+                fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ server_ip: serverIp, player_id: playerId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        logToTerminal(`Logged in successfully as Player ${playerId}`);
+                    } else {
+                        logToTerminal(`Login failed: ${data.message}`);
+                    }
+                })
+                .catch(error => logToTerminal(`Error logging in: ${error}`));
+                break;
+
+            default:
+                logToTerminal(`Unknown command: ${command}`);
+        }
+    };
+
     return { logToTerminal, bindTerminalEvents };
 })();
