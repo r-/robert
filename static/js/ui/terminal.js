@@ -7,40 +7,18 @@ const Terminal = (() => {
         terminal.scrollTop = terminal.scrollHeight;
     };
 
-    const parseCommand = (input) => {
-        const parts = input.split(" ");
-        const command = parts[0];
-
-        if (command === "/login" && parts.length === 3) {
-            serverIp = parts[1];
-            GameServerApi.setServerIp(serverIp);
-            GameServerApi.connect(parts[2])
-                .then((response) => logToTerminal(response.message)) // Log the greeting message
-                .catch((error) => logToTerminal(`Error: ${error.message}`));
-            logToTerminal(`Connecting to server at ${serverIp}...`);
-            Infobox.startHpBar()
-        } else if (serverIp) {
-            GameServerApi.sendCommand(input)
-                .then((response) => logToTerminal(response.message))
-                .catch((error) => logToTerminal(`Error: ${error.message}`));
-        } else if (command === "/say") {
-            const message = parts.slice(1).join(" "); // Join the rest of the message after "/say"
-
-            // Send the message to the backend using fetch
-            fetch("/say", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ message: message }),
+    const fetchSystemStatus = () => {
+        fetch('/get_system_status')
+            .then(response => response.json())
+            .then(data => {
+                // Log each component status
+                for (let component in data) {
+                    logToTerminal(`${component}: ${data[component]}`);
+                }
             })
-                .then((response) => response.json())
-                .then((data) => logToTerminal(`Speech response: ${data.message}`))
-                .catch((error) => logToTerminal(`Error: ${error.message}`));
-        }
-        else {
-            logToTerminal("Please log in first using /login <server_ip> <player_id>.");
-        }
+            .catch(error => {
+                logToTerminal(`Error fetching system status: ${error}`);
+            });
     };
 
     const bindTerminalEvents = () => {
@@ -58,6 +36,11 @@ const Terminal = (() => {
             const input = document.getElementById("command-input").value.trim();
             document.getElementById("command-input").value = ""; // Clear input field
             parseCommand(input);
+        });
+
+        // Bind button to fetch system status
+        document.getElementById("check-system-status").addEventListener("click", () => {
+            fetchSystemStatus(); // Check system status when the button is clicked
         });
     };
 

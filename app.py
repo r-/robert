@@ -12,10 +12,23 @@ import pyttsx3
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Initialize motors
-motor_a = Motor('A')  # Right engine (forward is positive)
-motor_d = Motor('D')  # Left engine (forward is negative due to orientation)
-motor_c = Motor('C')
+try:
+    motor_a = Motor('A')  # Right engine (forward is positive)
+except Exception as e:
+    print(f"Error initializing Motor A (right-engine). Make sure it's connected to the HAT.")
+    motor_a = None
+
+try:
+    motor_d = Motor('D')  # Left engine (forward is negative due to orientation)
+except Exception as e:
+    print(f"Error initializing Motor D (left-engine). Make sure it's connected to the HAT.")
+    motor_d = None
+
+try:
+    motor_c = Motor('C')  # Camera engine (up & down for rotation)
+except Exception as e:
+    print(f"Error initializing Motor C. Make sure it's connected to the HAT.")
+    motor_c = None
 
 # Global variable for the target ID
 target_id = None
@@ -32,6 +45,34 @@ parameters = aruco.DetectorParameters()
 # === Frame buffer & locking ===
 latest_frame = None
 frame_lock = Lock()
+
+@app.route('/get_system_status', methods=['GET'])
+def get_system_status():
+    system_status = {
+        "Right Engine": check_motor_status(motor_a, 'Motor A'),
+        "Left Engine": check_motor_status(motor_d, 'Motor D'),
+        "Camera Rotation Engine": check_motor_status(motor_c, 'Motor C'),
+        "Camera Feed": check_camera_status(),
+    }
+    return jsonify(system_status)
+
+def check_motor_status(motor, motor_name):
+    """Helper function to check motor status."""
+    if motor is None:
+        return f"{motor_name} is not initialized. Check the connection."
+    else:
+        return f"{motor_name} is initialized."
+
+def check_camera_status():
+    """Helper function to check camera status."""
+    try:
+        ret, frame = camera.read()
+        if not ret:
+            return "Camera is not working. Check the connection."
+        else:
+            return "Camera is initialized."
+    except Exception as e:
+        return f"Error with camera: {str(e)}"
 
 def camera_reader():
     global latest_frame
@@ -94,8 +135,8 @@ def control_camera():
         motor_c.pwm(camera_speed)
         return jsonify({"status": "success", "up/down": camera_speed})
     except Exception as e:
-        print(f"Error controlling camera: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        error_message = f"Error controlling camera: {e}"
+        return jsonify({"status": "error", "message": error_message}), 500
 
 
 @app.route('/control_motor', methods=['POST'])
