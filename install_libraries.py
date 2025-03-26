@@ -11,7 +11,9 @@ packages = [
     "opencv-contrib-python",
     "psutil",
     "pyttsx3",
-    "buildhat"
+    "buildhat",
+    "mpg321",
+    "gTTs"
 ]
 
 def install_package(package):
