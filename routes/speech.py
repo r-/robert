@@ -17,11 +17,15 @@ def talk():
         return jsonify({"error": "No message provided"}), 400
 
     try:
-        tts = gTTS(text=message, lang='en', slow=False)
-        audio_file = "output.mp3"
-        tts.save(audio_file)
-        os.system(f"mpg321 {audio_file}")  # Play the audio file
+        speak_text(message)
 
         return jsonify({"message": f"Spoken message: {message}"}), 200
     except Exception as e:
         return jsonify({"error": f"Speech synthesis failed: {str(e)}"}), 500
+    
+
+def speak_text(message):
+    tts = gTTS(text=message, lang='en', slow=False)
+    audio_file = "output.mp3"
+    tts.save(audio_file)
+    os.system(f"mpg321 {audio_file}")  # Play the audio file

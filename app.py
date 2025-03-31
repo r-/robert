@@ -2,6 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 import logging
 from config import Config
+from routes.chatWithAI import run_chat_ai 
+import threading
 
 # Import routes
 from routes.camera import camera_bp
@@ -33,6 +35,9 @@ app.register_blueprint(network_bp, url_prefix='/network')
 app.register_blueprint(speech_bp, url_prefix='/speech')
 app.register_blueprint(config_bp, url_prefix='/config')
 app.register_blueprint(system_bp) 
+
+chat_ai_thread = threading.Thread(target=run_chat_ai, daemon=True)
+chat_ai_thread.start()
 
 if __name__ == "__main__":
     print(f"Starting server at {app.config['SERVER_HOST']}:{app.config['SERVER_PORT']}")
