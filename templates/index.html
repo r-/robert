@@ -18,25 +18,34 @@
 
     <div id="joystick-container"></div>
     <div class="video-container">
-        <img src="/video_feed" alt="Video Stream">
+        <img src="/camera/video_feed" alt="Video Stream">
     </div>
     <div id="config-panel" class="container">
         <h2>Configuration</h2>
+        
         <div>
             <h3>Settings</h3>
+    
             <p>Framerate:</p>
             <input type="range" id="framerate-slider" min="10" max="60" value="60">
             <span id="framerate-value">60 FPS</span>
+    
             <p>JPEG Quality:</p>
             <input type="range" id="quality-slider" min="1" max="100" value="10">
             <span id="quality-value">10</span>
+    
+            <p>Motor Speed:</p>
+            <input type="range" id="motor-speed-slider" min="0" max="1" step="0.1" value="1">
+            <span id="motor-speed-value">1.0</span>
         </div>
+    
         <div>
             <h3>Network</h3>
             <p>IP: <span>{{ server_ip }}</span></p>
             <p>Upload: <span id="upload-speed">0 Mbps</span></p>
             <p>Download: <span id="download-speed">0 Mbps</span></p>
         </div>     
+    
         <div>
             <button id="apply-config">Apply Changes</button>
             <button id="check-system-status">Check System Status</button>
@@ -68,61 +77,6 @@
     </div>
 
     </div>
-
-    <script>
-        // Update the framerate and quality values displayed
-        document.getElementById('framerate-slider').addEventListener('input', function() {
-            document.getElementById('framerate-value').textContent = this.value + " FPS";
-        });
-    
-        document.getElementById('quality-slider').addEventListener('input', function() {
-            document.getElementById('quality-value').textContent = this.value;
-        });
-    
-        // Send the new configuration to the backend
-        document.getElementById('apply-config').addEventListener('click', function() {
-            const framerate = document.getElementById('framerate-slider').value;
-            const quality = document.getElementById('quality-slider').value;
-    
-            fetch('/set_config', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    framerate: framerate,
-                    quality: quality
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Configuration updated:', data);
-                window.location.reload();  // Refresh the page to apply new settings
-            })
-            .catch(err => {
-                console.error('Error updating configuration:', err);
-            });
-        });
-    
-        // Fetch the current configuration settings and update the sliders
-        window.addEventListener('DOMContentLoaded', () => {
-            fetch('/get_config')
-                .then(response => response.json())
-                .then(data => {
-                    const framerate = data.framerate;
-                    const quality = data.quality;
-    
-                    // Update sliders and values
-                    document.getElementById('framerate-slider').value = framerate;
-                    document.getElementById('quality-slider').value = quality;
-                    document.getElementById('framerate-value').textContent = framerate + " FPS";
-                    document.getElementById('quality-value').textContent = quality;
-                })
-                .catch(err => {
-                    console.error('Error fetching current config:', err);
-                });
-        });
-    </script>
     <script>
         const server_ip = "<?php echo $server_ip; ?>"; // Default server IP
 
@@ -209,24 +163,9 @@
         });
 
     </script>
-    <script>
-        function updateNetworkSpeed() {
-            fetch('/network_speed')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('upload-speed').textContent = data.upload_mbps + " Mbps";
-                    document.getElementById('download-speed').textContent = data.download_mbps + " Mbps";
-                })
-                .catch(err => console.error('Error fetching network speed:', err));
-        }
-
-        // Refresh speed every 2 seconds
-        setInterval(updateNetworkSpeed, 2000);
-
-        // Initial load
-        updateNetworkSpeed();
-    </script>
-
+    
+    <script src="{{ url_for('static', filename='js/ui/network.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/config.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/infobox.js') }}"></script>
     <script src="{{ url_for('static', filename='js/api/robotApi.js') }}"></script>
     <script src="{{ url_for('static', filename='js/api/gameServerApi.js') }}"></script>

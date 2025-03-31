@@ -1,3 +1,5 @@
+# NOTE: For TTS type "sudo apt-get install mpg321" into command-terminal
+
 # Run this program to install all required libraries for robert
 
 import subprocess

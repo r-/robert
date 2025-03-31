@@ -21,7 +21,7 @@ const GameServerApi = (() => {
             }
 
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", `http://${serverIp}:5001/command`, true); // Add port 5001
+            xhr.open("POST", `http://${serverIp}:5001/network/command`, true); // Add port 5001
             xhr.setRequestHeader("Content-Type", "application/json");
 
             xhr.onreadystatechange = () => {

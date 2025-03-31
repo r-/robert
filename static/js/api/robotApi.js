@@ -9,7 +9,7 @@ const RobotApi = (() => {
         const data = JSON.stringify({ left, right });
     
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", `/control_motor`, true);  // RELATIVE URL - no CORS issues
+        xhr.open("POST", `motors/control_motor`, true);  // RELATIVE URL - no CORS issues
         xhr.setRequestHeader("Content-Type", "application/json");
     
         xhr.onreadystatechange = () => {
@@ -35,7 +35,7 @@ const RobotApi = (() => {
         const data = JSON.stringify({ up });
     
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", `/control_camera`, true);  // RELATIVE URL - no CORS issues
+        xhr.open("POST", `motors/control_camera`, true);  // RELATIVE URL - no CORS issues
         xhr.setRequestHeader("Content-Type", "application/json");
     
         xhr.onreadystatechange = () => {
@@ -63,9 +63,9 @@ const RobotApi = (() => {
 
         document.querySelector('.video-container').style.border = "5px solid #b30000";
 
-        console.log("Activated")
+        console.log("Activated!")
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", `http://${server_ip}:5000/activate`, true);
+        xhr.open("POST", `/activate`, true);
         xhr.setRequestHeader("Content-Type", "application/json");
 
         xhr.onreadystatechange = () => {

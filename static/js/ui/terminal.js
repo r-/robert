@@ -8,7 +8,7 @@ const Terminal = (() => {
     };
 
     const fetchSystemStatus = () => {
-        fetch('/get_system_status')
+        fetch('motors/get_system_status')
             .then(response => response.json())
             .then(data => {
                 // Log each component status
@@ -55,7 +55,7 @@ const Terminal = (() => {
                     return;
                 }
                 const message = args.slice(1).join(" ");
-                fetch('/say', {
+                fetch('/speech/say', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
