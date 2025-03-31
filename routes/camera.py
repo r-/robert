@@ -1,7 +1,7 @@
 from flask import Blueprint, Response
 import cv2
 from threading import Thread, Lock
-from config import Config  # ✅ Import config
+from config import Config
 
 camera_bp = Blueprint('camera', __name__)
 
