@@ -4,7 +4,6 @@
     --progress-border: #00eaff; 
     --progress-glow: rgba(0, 234, 255, 0.4);
     --progress-height: 20px;
-    --progress-animation-duration: 0.4s;
 }
 
 progress {
@@ -29,7 +28,6 @@ progress::-webkit-progress-value {
     background: linear-gradient(135deg, #00f0ff, #008cff, #00f0ff);
     background-size: 300% 300%; /* For the gradient movement */
     box-shadow: 0 0 15px var(--progress-glow), 0 0 25px rgba(0, 234, 255, 0.6);
-    transition: width 0.4s ease-in-out;
     will-change: width;
     animation: neonGlow 3s infinite linear; /* Apply animation for constant movement */
 }
@@ -39,7 +37,6 @@ progress::-moz-progress-bar {
     background: linear-gradient(135deg, #00f0ff, #008cff, #00f0ff);
     background-size: 300% 300%; /* Ensure the gradient moves */
     box-shadow: 0 0 15px var(--progress-glow), 0 0 25px rgba(0, 234, 255, 0.6);
-    transition: width 0.4s ease-in-out;
     will-change: width;
     animation: neonGlow 3s infinite linear; /* Apply animation for constant movement */
 }

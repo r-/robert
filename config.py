@@ -13,8 +13,8 @@ class Config:
     # Camera settings
     CAMERA_INDEX = int(os.getenv('CAMERA_INDEX', 0)) 
     CAMERA_RESOLUTION = (640, 480)
-    CAMERA_FRAMERATE = 10
-    JPEG_QUALITY = int(os.getenv('JPEG_QUALITY', 80))  # JPEG image quality
+    CAMERA_FRAMERATE = 30
+    JPEG_QUALITY = int(os.getenv('JPEG_QUALITY', 15))  # JPEG image quality
 
     # Network monitoring settings
     NETWORK_CHECK_INTERVAL = int(os.getenv('NETWORK_CHECK_INTERVAL', 1))  # Seconds
@@ -29,4 +29,6 @@ class Config:
     SERVER_HOST = os.getenv('SERVER_HOST', '0.0.0.0')
     SERVER_PORT = int(os.getenv('SERVER_PORT', 5000))
     THREADED = os.getenv('THREADED', 'True').lower() in ('true', '1')
+
+    USE_AI = False
 

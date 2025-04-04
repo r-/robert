@@ -18,7 +18,8 @@
 
     <div id="joystick-container"></div>
     <div class="video-container">
-        <img src="/camera/video_feed" alt="Video Stream">
+        <img id="videoFeed" src="/camera/video_feed" class="video-stream" alt="Video Stream" style="display: none;">
+        <p id="noCameraMessage" class="no-camera-message" style="display: none;">No Camera Found</p>
     </div>
     <div id="config-panel" class="container">
         <h2>Configuration</h2>
@@ -72,8 +73,8 @@
         <div class="stat-sub-container">
             <label for="cooldown-bar">Cooldown:</label>
             <span id="cooldown-text">2s</span>
-            <progress id="cooldown-bar" value="100" max="100"></progress>
-        </div>
+            <progress id="cooldown-bar" value="0" max="100"></progress>
+        </div>        
     </div>
 
     </div>
@@ -172,6 +173,7 @@
     <script src="{{ url_for('static', filename='js/ui/userControls.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/terminal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/gamepad.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ui/cameracheck.js') }}"></script>
 </body>
 
 </html>

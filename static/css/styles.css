@@ -24,7 +24,6 @@ body {
 
 #config-panel input[type="range"] {
     margin-top: 5px;
-
 }
 
 #joystick-container
@@ -47,10 +46,18 @@ body {
     height: 100%;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
-    background-color: gray;
 }
 
-#video-stream
+.no-camera-message
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-weight: bold;
+    font-size: 2em;
+}
+
+.video-stream
 {
     width: 100%;
     height: 100%;
@@ -63,6 +70,7 @@ body {
     color: rgb(52, 206, 134);
     overflow-y: auto;
     height: 100%;
+    padding-bottom: 20px;
 }
 
 .terminal > div
@@ -120,4 +128,5 @@ h1 {
     border: 1px solid white;
     border-radius: 10px;
     padding: 10px;
+    background-color: rgba(0, 0, 0, 0.644);
 }

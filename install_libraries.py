@@ -14,8 +14,12 @@ packages = [
     "psutil",
     "pyttsx3",
     "buildhat",
-    "mpg321",
-    "gTTs"
+    "gTTs",
+    "pyzbar",
+    "SpeechRecognition",
+    "openai",
+    "numpy",
+    "flask-socketio"
 ]
 
 def install_package(package):

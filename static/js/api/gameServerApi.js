@@ -1,48 +1,57 @@
-const GameServerApi = (() => {
-    let serverIp = ""; // Store the server IP
-
-    const setServerIp = (ip) => {
-        serverIp = ip; // Update the server IP
-    };
-
-    const connect = (id) => {
-        return sendCommand(`/login ${serverIp} ${id}`);
-    };
-
-    const sendCommand = (command) => {
-        return new Promise((resolve, reject) => {
-            if (!serverIp) {
-                return reject(new Error("Server IP is not set."));
-            }
-
-            // Ensure the command starts with a "/"
-            if (!command.startsWith("/")) {
-                command = `/${command}`;
-            }
-
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `http://${serverIp}:5001/network/command`, true); // Add port 5001
-            xhr.setRequestHeader("Content-Type", "application/json");
-
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        console.log(response)
-                        if (response.status === "success") {
-                            resolve(response);
-                        } else {
-                            reject(new Error(response.message));
-                        }
-                    } else {
-                        reject(new Error(`HTTP Error: ${xhr.status} - ${xhr.statusText}`));
-                    }
-                }
-            };
-
-            xhr.send(JSON.stringify({ command }));
+const GameServerApi = {
+    sendCommand: function(command) {
+        return fetch('/command', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command: command }),
+        })
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => {
+            console.error('Error sending command:', error);
+            throw new Error('Failed to communicate with the server.');
         });
-    };
+    }
+};
 
-    return { setServerIp, connect, sendCommand };
-})();
+function handleJoinServer() {
+    const playerId = prompt("Enter your player ID to join the server:");
+
+    if (playerId) {
+        const command = `/login ${server_ip} ${playerId}`;
+        
+        // Send the join request to the game server API
+        GameServerApi.sendCommand(command)
+            .then(response => {
+                console.log("Join server response:", response);
+                Terminal.log(`Server: ${response.message}`);
+
+                if (response.status === "success") {
+                    // Successfully joined - redirect to game or update UI
+                    onJoinSuccess(playerId);
+                }
+            })
+            .catch(error => {
+                console.error("Failed to join server:", error);
+                Terminal.log(`Error: ${error.message}`);
+            });
+    } else {
+        console.log("Player ID not entered.");
+    }
+}
+
+/**
+ * Handles post-join actions such as redirecting or updating the UI.
+ * @param {string} playerId - The ID of the player who joined.
+ */
+function onJoinSuccess(playerId) {
+    console.log(`Player ${playerId} successfully joined!`);
+
+    // Example: Redirect to game UI
+    window.location.href = "/game";  
+
+    // Example: Update UI to show player is connected
+    document.getElementById("playerStatus").innerText = `Connected as: ${playerId}`;
+}
