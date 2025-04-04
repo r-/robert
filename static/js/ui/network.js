@@ -8,12 +8,12 @@ function updateNetworkSpeed() {
         .catch(err => console.error('Error fetching network speed:', err));
 }
 
-setInterval(updateNetworkSpeed, 1000);
+setInterval(updateNetworkSpeed, 5000);
 
 // Initial load
 updateNetworkSpeed();
 
-setInterval(UpdatePlayerHealth, 1000);
+setInterval(UpdatePlayerHealth, 2000);
 function UpdatePlayerHealth() {
     fetch('network/get_health')  // Make sure the correct route is used
         .then(response => response.json())

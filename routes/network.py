@@ -60,7 +60,7 @@ def get_health():
     max_health = 10  # Example max health
     
     # Debugging output
-    print(f"Returning health data: currentHealth = {health}, maxHealth = {max_health}")
+    #print(f"Returning health data: currentHealth = {health}, maxHealth = {max_health}")
     
     return jsonify({
         'currentHealth': health,

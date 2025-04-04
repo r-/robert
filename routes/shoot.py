@@ -43,6 +43,12 @@ def shoot():
     payload = {
         "command": f"attack {qr_data}"  # Send attack command
     }
+
+    address = get_address()
+    if address is None:
+        print("Not connected to server")
+        return
+
     connected_server_address = get_address() + "/command"
 
     if connected_server_address is None:
