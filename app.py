@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 import logging
 from config import Config
-from routes.chatWithAI import run_chat_ai 
+#from routes.chatWithAI import run_chat_ai 
 import threading
 
 # Import routes
