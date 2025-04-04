@@ -4,8 +4,6 @@ import speech_recognition as sr
 from openai import OpenAI
 from routes.speech import speak_text
 from config import Config
-if Config.USE_AI == false:
-    return
 
 # Load OpenAI API Key from environment variable
 api_key = os.getenv("OPENAI_API_KEY")
