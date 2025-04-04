@@ -16,7 +16,8 @@ camera.set(cv2.CAP_PROP_FRAME_WIDTH, Config.CAMERA_RESOLUTION[0])
 camera.set(cv2.CAP_PROP_FRAME_HEIGHT, Config.CAMERA_RESOLUTION[1])
 camera.set(cv2.CAP_PROP_FPS, Config.CAMERA_FRAMERATE)  # Set FPS from Config.FPS
 
-frame_queue = Queue(maxsize=10)  # Buffer to store frames
+# Lock to manage concurrent access to the frame
+frame_lock = Lock()
 latest_frame = None
 
 # Initialize the QR Code detector
@@ -24,6 +25,9 @@ qr_decoder = cv2.QRCodeDetector()
 
 # List to store detected QR codes
 detected_qr_codes = []
+
+# Thread-safe frame queue (no need to store multiple frames)
+frame_queue = Queue(maxsize=1)  # Only store the latest frame
 
 def camera_reader():
     global latest_frame
@@ -52,21 +56,19 @@ def camera_reader():
                 x, y, w, h = cv2.boundingRect(pts)  # Get bounding box coordinates
                 cv2.putText(frame, decoded_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
-            # Put the frame into the queue if there's space
-            if not frame_queue.full():
-                frame_queue.put(frame)
-
-        # Optional: Limit the frame capture rate using Config.FPS (time in seconds between frames)
-        time.sleep(1 / Config.CAMERA_FRAMERATE)
+            # Store only the latest frame
+            with frame_lock:
+                if not frame_queue.full():
+                    frame_queue.put(frame)
 
 def generate_mjpeg():
     """Generate MJPEG stream with configured quality."""
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), Config.JPEG_QUALITY]
 
     while True:
-        # Check if there's a frame available in the queue
+        # Wait until a frame is available in the queue
         if not frame_queue.empty():
-            frame = frame_queue.get()  # Get the next frame from the queue
+            frame = frame_queue.get()  # Get the latest frame from the queue
 
             ret, buffer = cv2.imencode('.jpg', frame, encode_param)
             if not ret:
@@ -92,3 +94,4 @@ atexit.register(cleanup)
 # Start camera reader in a background thread
 camera_thread = Thread(target=camera_reader, daemon=True)
 camera_thread.start()
+
