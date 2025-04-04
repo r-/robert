@@ -19,7 +19,8 @@ packages = [
     "SpeechRecognition",
     "openai",
     "numpy",
-    "flask-socketio"
+    "flask-socketio",
+    "netifaces"
 ]
 
 def install_package(package):
