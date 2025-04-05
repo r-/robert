@@ -39,7 +39,7 @@ def set_config():
         except ValueError:
             return jsonify({"error": "Invalid motor speed"}), 400
 
-    # Optionally, save the updated settings to a config file or .env
+    # Save the config to a file
     save_config_to_file()
 
     # Return a success message with the updated config
