@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R.O.B.E.R.T - Control Center</title>
 
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <!-- Styles for UI -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
@@ -160,7 +161,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             UserControls.bindRobotControls();
-            Terminal.bindTerminalEvents();
         });
 
     </script>
@@ -171,7 +171,13 @@
     <script src="{{ url_for('static', filename='js/api/robotApi.js') }}"></script>
     <script src="{{ url_for('static', filename='js/api/gameServerApi.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/userControls.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ui/terminal.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/terminal/terminal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/terminal/commandHandler.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/terminal/commandParser.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/terminal/uiBinder.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
     <script src="{{ url_for('static', filename='js/ui/gamepad.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/cameracheck.js') }}"></script>
 </body>
