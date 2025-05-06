@@ -1,5 +1,5 @@
 {
-    "CAMERA_FRAMERATE": 60,
-    "JPEG_QUALITY": 15,
+    "CAMERA_FRAMERATE": 30,
+    "JPEG_QUALITY": 38,
     "MOTOR_SPEED": 1.0
 }

@@ -20,6 +20,7 @@ last_time = time.time()
 def set_local_ip(newIP):
     global local_ip
     local_ip = newIP
+    print(f"Local IP set to {local_ip}")
 
 @network_bp.route('/network_speed')
 def network_speed():
@@ -49,6 +50,10 @@ def network_speed():
         "upload_mbps": round(sent_mbps, 2),
         "download_mbps": round(recv_mbps, 2)
     })
+
+def get_local_ip():
+    global local_ip
+    return local_ip
 
 def get_address():
     global connected_server_address
@@ -91,6 +96,7 @@ import requests
 
 @network_bp.route('/command', methods=['POST'])
 def handle_command():
+    global local_ip
     global connected_server_address
     data = request.get_json()
 

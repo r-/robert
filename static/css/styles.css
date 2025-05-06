@@ -130,3 +130,32 @@ h1 {
     padding: 10px;
     background-color: rgba(0, 0, 0, 0.644);
 }
+
+#death-screen {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    font-weight: bold;
+    color: white;
+    background-color:rgba(0,0,0,0.644);
+    transform: translate(-50%, -50%);
+    height:30vh;
+    width:30%;
+    border-radius:10px;
+    border: 1px solid white;
+    padding:10px;
+    display:none;
+}
+#death-header {
+    font-size: 2em;
+    margin:0;
+    font-weight:900;
+    text-align:center;
+}
+#death-text {
+    font-size: 1em;
+    margin:0;
+    font-weight:400;
+    text-align:center;
+    margin-top:10vh;
+}

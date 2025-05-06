@@ -112,7 +112,3 @@ def cleanup():
 # Add shutdown handling when Flask exits
 import atexit
 atexit.register(cleanup)
-
-# Start camera reader in a background thread (optional, if you want background processing)
-#camera_thread = Thread(target=generate, daemon=True)
-#camera_thread.start()

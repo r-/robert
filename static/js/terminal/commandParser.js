@@ -11,6 +11,7 @@ const CommandParser = (() => {
             case "/login": return CommandHandlers.login(args);
             case "/disconnect": return CommandHandlers.disconnect(args);
             case "/check-system-status": return CommandHandlers.fetchSystemStatus();
+            case "/test": return CommandHandlers.test();
             default:
                 Terminal.logToTerminal(`Unknown command: ${command}. Use /help to see available commands.`);
         }

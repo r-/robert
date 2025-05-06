@@ -33,6 +33,12 @@ function UpdatePlayerHealth() {
             // Safely calculate progress bar value
             let progressBar = document.getElementById('hp-bar');
             progressBar.value = (currentHealth / maxHealth) * 100;
+
+            // Death screen
+            if (currentHealth <= 0) {
+                const deathScreen = document.getElementById('death-screen');
+                deathScreen.style.display = 'block';
+            }
         })
         .catch(error => {
             console.error('Error fetching health data:', error);

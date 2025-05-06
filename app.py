@@ -23,8 +23,8 @@ class NoRequestsFilter(logging.Filter):
     def filter(self, record):
         return not ("GET /" in record.getMessage() or "POST /" in record.getMessage())
 
-#log.addFilter(NoRequestsFilter())
-#log.setLevel(logging.INFO)
+log.addFilter(NoRequestsFilter())
+log.setLevel(logging.INFO)
 
 # Register Blueprints for different routes
 app.register_blueprint(camera_bp, url_prefix='/camera')

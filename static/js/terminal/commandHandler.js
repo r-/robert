@@ -102,11 +102,15 @@ const CommandHandlers = (() => {
         `, true);     
     };
 
+    const test = () => {
+        Terminal.logToTerminal(`Test IDK`, true);
+    }
     return {
         say,
         login,
         disconnect,
         fetchSystemStatus,
-        help
+        help,
+        test
     };
 })();

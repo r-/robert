@@ -16,7 +16,10 @@
 </head>
 
 <body>
-
+    <div id="death-screen">
+        <div id="death-header">You died!</div>
+        <div id="death-text">Return to your flag to revive and play better</div>
+    </div>
     <div id="joystick-container"></div>
     <div class="video-container">
         <img id="videoFeed" src="/camera/video_feed" class="video-stream" alt="Video Stream" style="display: none;">
@@ -175,6 +178,7 @@
     <script src="{{ url_for('static', filename='js/terminal/terminal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/terminal/commandHandler.js') }}"></script>
     <script src="{{ url_for('static', filename='js/terminal/commandParser.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/terminal/gameOutput.js') }}"></script>
     <script src="{{ url_for('static', filename='js/terminal/uiBinder.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 

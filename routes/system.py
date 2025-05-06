@@ -25,4 +25,5 @@ def home():
     server_ip = get_local_ip()
     latency = time.time() - start_time  # Measure request handling time
     set_local_ip(server_ip)
+    print(f"Local ip {server_ip}")
     return render_template('index.html', server_ip=server_ip, latency=latency)

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from routes.network import get_address
+from routes.network import get_address, get_local_ip
 import time
 import os
 import subprocess
@@ -26,12 +26,13 @@ def update_targets(newTargets):
 def shoot():
     global last_shot_time
     global qr_codes
+    print(get_local_ip())
 
     # Lock and read QR codes safely
     current_time = time.time()
 
     if current_time - last_shot_time < COOLDOWN_TIME:
-        return jsonify({"message": "Cooldown in effect!"}), 200
+        return jsonify("Cooldown in effect!"), 200
     
     # Update the last shot time
     last_shot_time = current_time
@@ -43,21 +44,21 @@ def shoot():
         qr_data = items[0]
     else:
         print("NO QR code")
-        return jsonify({"message": "No QR code detected!"}), 400
+        return jsonify("No QR code detected!"), 400
     payload = {
-        "command": f"attack {qr_data}"
+        "command": f"attack {qr_data} {get_local_ip()}",
     }
 
     address = get_address()
     if address is None:
         print("Not connected to server")
-        return jsonify({"message": "Not connected to server!"}), 400
+        return jsonify("Not connected to server!"), 400
 
     connected_server_address = get_address() + "/command"
 
     if connected_server_address is None:
         print("No server url")
-        return jsonify({"message": "No SERVER_URL found!"}), 200
+        return jsonify("No SERVER_URL found!"), 200
 
     try:
         print("Sending request to:", connected_server_address)
@@ -76,4 +77,4 @@ def shoot():
         print(response.text)
         return jsonify({"message": "Server returned invalid JSON", "response": response.text}), 500
 
-    return jsonify({"message": f"Shot fired! QR Code: {qr_data}", "server_response": server_response}), 200
+    return jsonify({"message": f"Shot fired! QR Code: {qr_data}", "server_response": server_response}), 200 
