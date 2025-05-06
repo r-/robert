@@ -48,9 +48,14 @@ if Config.USE_AI:
 if __name__ == "__main__":
     print(f"Starting server at {app.config['SERVER_HOST']}:{app.config['SERVER_PORT']}")
     
-    # Use gunicorn or other production WSGI servers for better performance in production
+    context = (
+        'server.crt',
+        'server.key',
+    )
+    
     app.run(
         host=app.config['SERVER_HOST'],
         port=app.config['SERVER_PORT'],
-        threaded=app.config['THREADED']
+        threaded=app.config['THREADED'],
+        ssl_context=context
     )
