@@ -1,0 +1,17 @@
+buildhat
+Flask
+flask-cors
+gTTS
+netifaces
+numpy
+openai
+opencv-contrib-python
+opencv-python
+psutil
+pyttsx3
+pyzbar
+requests
+SpeechRecognition
+urllib3
+Werkzeug
+cryptography
