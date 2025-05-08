@@ -16,6 +16,9 @@
 </head>
 
 <body>
+    <!-- WebGL Canvas for rendering 3D content -->
+    <canvas id="webgl-canvas"></canvas>
+
     <div id="death-screen">
         <div id="death-header">You died!</div>
         <div id="death-text">Return to your flag to revive and play better</div>
@@ -54,7 +57,7 @@
         <div>
             <button id="apply-config">Apply Changes</button>
             <button id="check-system-status">Check System Status</button>
-            <button id="enterVR">Enter VR</button>
+            <pre id="output"></pre>
         </div>        
     </div>
     <div class="terminal-holder container">
@@ -168,7 +171,20 @@
         });
 
     </script>
-    
+    <script>
+        // Initialize WebGL
+        const canvas = document.getElementById('webgl-canvas');
+        const gl = canvas.getContext('webgl2');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Set up WebGL context and start rendering
+        // Add WebGL code for rendering 3D content here
+
+        // For simplicity, setting a clear color for the WebGL canvas
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Black background
+        gl.clear(gl.COLOR_BUFFER_BIT);  // Clear the screen
+    </script>
     <script src="{{ url_for('static', filename='js/ui/network.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/config.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui/infobox.js') }}"></script>
