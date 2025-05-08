@@ -2,6 +2,7 @@ from flask import Blueprint, render_template
 import socket
 import time
 from routes.network import set_local_ip
+from routes.speech import speak_text
 import netifaces as ni
 
 system_bp = Blueprint('system', __name__)
@@ -26,4 +27,5 @@ def home():
     latency = time.time() - start_time  # Measure request handling time
     set_local_ip(server_ip)
     print(f"Local ip {server_ip}")
+    speak_text('server_ip')
     return render_template('index.html', server_ip=server_ip, latency=latency)
