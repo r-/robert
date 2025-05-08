@@ -49,8 +49,8 @@ if __name__ == "__main__":
     print(f"Starting server at {app.config['SERVER_HOST']}:{app.config['SERVER_PORT']}")
     
     context = (
-        'server.crt',
-        'server.key',
+        'certs/server.crt',
+        'certs/server.key',
     )
     
     app.run(

@@ -23,6 +23,7 @@ packages = [
 "SpeechRecognition",
 "urllib3",
 "Werkzeug",
+"cryptography"
 ]
 
 def install_package(package):
