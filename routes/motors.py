@@ -1,3 +1,5 @@
+import threading
+import time
 from config import Config
 from flask import Blueprint, jsonify, request
 from buildhat import Motor
@@ -22,6 +24,12 @@ try:
 except Exception as e:
     print(f"Error initializing Motor C. Check connection.")
     motor_c = None
+    
+try:
+    motor_b = Motor('B') # Continous rotation motor
+except Exception as e:
+    print(f"Error initializing Motor B Check connection.")
+    motor_b = None
 
 def check_motor_status(motor, motor_name):
     """Helper function to check motor status."""
@@ -36,6 +44,7 @@ def get_system_status():
         "Right Engine": check_motor_status(motor_a, 'Motor A'),
         "Left Engine": check_motor_status(motor_d, 'Motor D'),
         "Camera Rotation Engine": check_motor_status(motor_c, 'Motor C'),
+        "Continous Rotation Engine": check_motor_status(motor_b, 'Motor B'),
     }
     return jsonify(system_status)
 
@@ -80,3 +89,20 @@ def control_camera():
         return jsonify({"status": "success", "up/down": camera_speed})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+def run_continuous_motor():
+    try:
+        while True:
+            if motor_b:
+                motor_b.pwm(0.15)
+            time.sleep(0.1)  # Sleep to avoid CPU overload
+    except KeyboardInterrupt:
+        # This will handle manual stopping of the program with Ctrl+C
+        print("Program interrupted. Stopping motor.")
+    finally:
+        # Ensure the motor is set to 0 when the program is stopped or encounters an error
+        if motor_b:
+            motor_b.pwm(0)
+            print("Motor stopped.")
+threading.Thread(target=run_continuous_motor, daemon=True).start()
