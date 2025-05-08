@@ -112,6 +112,7 @@ class GamepadController {
         this.gamepads.forEach((gamepad) => {
             if (gamepad.axes[5] > 0.8){
                 RobotApi.shoot()
+                userControls.startCooldown()
             }
         })
     }
