@@ -109,5 +109,5 @@ const UserControls = (() => {
         }
     };
 
-    return { bindRobotControls };
+    return { bindRobotControls, startCooldown };
 })();
