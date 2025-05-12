@@ -62,7 +62,7 @@ def get_address():
 @network_bp.route('/get_health')
 def get_health():
     global health
-    max_health = 10  # Example max health
+    max_health = 4  # Example max health
     
     # Debugging output
     #print(f"Returning health data: currentHealth = {health}, maxHealth = {max_health}")

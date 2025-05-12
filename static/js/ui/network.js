@@ -34,10 +34,15 @@ function UpdatePlayerHealth() {
             let progressBar = document.getElementById('hp-bar');
             progressBar.value = (currentHealth / maxHealth) * 100;
 
+            const deathScreen = document.getElementById('death-screen');
+
             // Death screen
             if (currentHealth <= 0) {
-                const deathScreen = document.getElementById('death-screen');
                 deathScreen.style.display = 'block';
+            }
+            else
+            {
+                deathScreen.style.display = 'none';
             }
         })
         .catch(error => {
