@@ -48,14 +48,9 @@ if Config.USE_AI:
 if __name__ == "__main__":
     print(f"Starting server at {app.config['SERVER_HOST']}:{app.config['SERVER_PORT']}")
     
-    context = (
-        'certs/server.crt',
-        'certs/server.key',
-    )
     
     app.run(
         host=app.config['SERVER_HOST'],
         port=app.config['SERVER_PORT'],
         threaded=app.config['THREADED'],
-        ssl_context=context
     )
