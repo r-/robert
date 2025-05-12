@@ -111,8 +111,9 @@ class GamepadController {
     handleButtonInput(){
         this.gamepads.forEach((gamepad) => {
             if (gamepad.axes[5] > 0.8){
+                console.log("shots fired");
                 RobotApi.shoot()
-                userControls.startCooldown()
+                UserControls.startCooldown()
             }
         })
     }

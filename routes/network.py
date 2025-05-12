@@ -6,7 +6,7 @@ import socket
 
 network_bp = Blueprint('network', __name__)
 
-health = 10
+health = 4
 
 connected_players = {}
 connected_server_address = None  # Store the server URL globally

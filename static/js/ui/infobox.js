@@ -17,7 +17,7 @@ const Infobox = (() => {
     
                 // Optionally, update text or other indicators
                 const hpText = document.getElementById('hp-text');
-                hpText.textContent = `HP: ${health}/10`;
+                hpText.textContent = `HP: ${health}/4`;
             } else {
                 console.error("Error fetching HP:", data.message);
             }

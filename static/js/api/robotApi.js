@@ -64,16 +64,13 @@ const RobotApi = (() => {
 
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
+
                 if (xhr.status === 200) {
                     console.log("Shoot response:", JSON.parse(xhr.responseText));
-                    Terminal.logToTerminal(JSON.stringify(JSON.parse(xhr.responseText)).replace(/"/g, ''), true);
+                    Terminal.logToTerminal(JSON.parse(xhr.responseText));
                 } else {
                     console.error(`Shoot API error: ${xhr.status} - ${xhr.statusText}`);
-                    Terminal.logToTerminal(JSON.stringify(JSON.parse(xhr.responseText))
-                    .replace(/{/g, '')
-                    .replace(/}/g, '')
-                    .replace(/"/g, ''),
-                    true);
+                    Terminal.logToTerminal(JSON.parse(xhr.responseText));
                 }
             }
         };
