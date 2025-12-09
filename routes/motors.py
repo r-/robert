@@ -1,108 +1,254 @@
+"""
+Motor control module for R.O.B.E.R.T.
+
+Manages motor operations including drive motors and specialized motors
+for camera rotation and continuous rotation tasks.
+"""
+
 import threading
 import time
+import logging
 from config import Config
 from flask import Blueprint, jsonify, request
 from buildhat import Motor
+from typing import Optional, Dict
 
+# Blueprint configuration
 motors_bp = Blueprint('motors', __name__)
 
-# Initialize motors
-try:
-    motor_a = Motor('A')  # Right engine (forward is positive)
-except Exception as e:
-    print(f"Error initializing Motor A (right-engine). Check connection.")
-    motor_a = None
+# Logger setup
+logger = logging.getLogger(__name__)
 
-try:
-    motor_d = Motor('D')  # Left engine (forward is negative due to orientation)
-except Exception as e:
-    print(f"Error initializing Motor D (left-engine). Check connection.")
-    motor_d = None
-
-try:
-    motor_c = Motor('C')  # Camera rotation motor
-except Exception as e:
-    print(f"Error initializing Motor C. Check connection.")
-    motor_c = None
+# ==================== Motor Initialization ====================
+def initialize_motor(port: str, name: str) -> Optional[Motor]:
+    """
+    Initialize a motor on the specified port.
     
-try:
-    motor_b = Motor('B') # Continous rotation motor
-except Exception as e:
-    print(f"Error initializing Motor B Check connection.")
-    motor_b = None
+    Args:
+        port (str): Motor port letter (A, B, C, D)
+        name (str): Human-readable name for the motor
+        
+    Returns:
+        Optional[Motor]: Motor object if successful, None otherwise
+    """
+    try:
+        motor = Motor(port)
+        logger.info(f"Motor {port} ({name}) initialized successfully")
+        return motor
+    except Exception as e:
+        logger.error(f"Failed to initialize Motor {port} ({name}): {e}")
+        return None
 
-def check_motor_status(motor, motor_name):
-    """Helper function to check motor status."""
+
+# Initialize all motors
+motor_a = initialize_motor('A', 'Right Engine')
+motor_d = initialize_motor('D', 'Left Engine')
+motor_c = initialize_motor('C', 'Camera Rotation')
+motor_b = initialize_motor('B', 'Continuous Rotation')
+
+# Store motors in a dictionary for easier management
+motors: Dict[str, Optional[Motor]] = {
+    'right_engine': motor_a,
+    'left_engine': motor_d,
+    'camera_rotation': motor_c,
+    'continuous_rotation': motor_b,
+}
+
+
+def check_motor_status(motor: Optional[Motor], motor_name: str) -> str:
+    """
+    Check and return the status of a motor.
+    
+    Args:
+        motor (Optional[Motor]): Motor object
+        motor_name (str): Name of the motor
+        
+    Returns:
+        str: Status message
+    """
     if motor is None:
-        return f"{motor_name} is not initialized. Check the connection."
-    return f"{motor_name} is initialized."
+        return f"{motor_name} is NOT initialized (check connection)"
+    return f"{motor_name} is initialized and ready"
+
 
 @motors_bp.route('/get_system_status', methods=['GET'])
-def get_system_status():
-    """Returns the status of the motors."""
+def get_system_status() -> tuple:
+    """
+    Get the status of all motors.
+    
+    Returns:
+        tuple: (JSON response, HTTP status code)
+    """
     system_status = {
-        "Right Engine": check_motor_status(motor_a, 'Motor A'),
-        "Left Engine": check_motor_status(motor_d, 'Motor D'),
-        "Camera Rotation Engine": check_motor_status(motor_c, 'Motor C'),
-        "Continous Rotation Engine": check_motor_status(motor_b, 'Motor B'),
+        "right_engine": check_motor_status(motor_a, 'Motor A (Right)'),
+        "left_engine": check_motor_status(motor_d, 'Motor D (Left)'),
+        "camera_rotation": check_motor_status(motor_c, 'Motor C (Camera)'),
+        "continuous_rotation": check_motor_status(motor_b, 'Motor B (Continuous)'),
     }
-    return jsonify(system_status)
+    logger.debug(f"System status requested: {system_status}")
+    return jsonify(system_status), 200
+
 
 @motors_bp.route('/control_motor', methods=['POST'])
-def control_motor():
+def control_motor() -> tuple:
     """
-    Controls the motors based on joystick input.
-    Accepts a JSON payload with 'left' and 'right' motor speeds.
+    Control drive motors based on joystick input.
+    
+    Expected JSON payload:
+        {
+            "forward": <float>,  # Forward/backward speed (-1.0 to 1.0, positive = forward)
+            "right": <float>     # Right/left turning (-1.0 to 1.0, positive = right turn)
+        }
+    
+    Motor mapping:
+        - forward = both motors forward/backward
+        - right = left motor forward + right motor backward (turns right)
+    
+    Returns:
+        tuple: (JSON response, HTTP status code)
     """
     data = request.get_json()
-    if not data or 'left' not in data or 'right' not in data:
-        return jsonify({"status": "error", "message": "Invalid motor speed data"}), 400
-
-    left_speed = float(data['left']) * Config.MOTOR_SPEED
-    right_speed = float(data['right']) * Config.MOTOR_SPEED
-
+    
+    if not data or 'forward' not in data or 'right' not in data:
+        logger.warning("Invalid motor control request: missing 'forward' or 'right' field")
+        return jsonify({
+            "status": "error",
+            "message": "Invalid request. Required fields: 'forward', 'right'"
+        }), 400
+    
     try:
+        forward_input = float(data['forward'])
+        right_input = float(data['right'])
+        
+        # Apply configuration speed multiplier
+        forward_speed = forward_input * Config.MOTOR_SPEED
+        right_speed = right_input * Config.MOTOR_SPEED
+        
+        # Calculate left and right motor speeds
+        # forward: move both forward/backward
+        # right: turn right (left forward, right backward) or left (left backward, right forward)
+        left_motor_speed = forward_speed - right_speed
+        right_motor_speed = forward_speed + right_speed
+        
+        # Clamp speeds to [-1, 1]
+        left_motor_speed = max(-1.0, min(1.0, left_motor_speed))
+        right_motor_speed = max(-1.0, min(1.0, right_motor_speed))
+        
+        # Control motors
         if motor_a:
-            motor_a.pwm(right_speed)
+            motor_a.pwm(right_motor_speed)
         if motor_d:
-            motor_d.pwm(-left_speed)
-        return jsonify({"status": "success", "left": left_speed, "right": right_speed})
+            motor_d.pwm(-left_motor_speed)  # Negative due to motor orientation
+        
+        logger.debug(f"Motor control: forward={forward_speed:.2f}, right={right_speed:.2f} -> left_motor={left_motor_speed:.2f}, right_motor={right_motor_speed:.2f}")
+        
+        return jsonify({
+            "status": "success",
+            "forward_speed": round(forward_speed, 2),
+            "right_speed": round(right_speed, 2),
+            "left_motor": round(left_motor_speed, 2),
+            "right_motor": round(right_motor_speed, 2)
+        }), 200
+        
+    except ValueError as e:
+        logger.error(f"Invalid motor speed values: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "Invalid speed values. Must be numeric."
+        }), 400
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.error(f"Motor control error: {e}")
+        return jsonify({
+            "status": "error",
+            "message": f"Motor control failed: {str(e)}"
+        }), 500
+
 
 @motors_bp.route('/control_camera', methods=['POST'])
-def control_camera():
+def control_camera() -> tuple:
     """
-    Controls the camera motor.
-    Accepts a JSON payload with 'up' (speed for moving up/down).
+    Control camera rotation motor.
+    
+    Expected JSON payload:
+        {
+            "up": <float>   # Camera tilt speed (-1.0 to 1.0)
+        }
+    
+    Returns:
+        tuple: (JSON response, HTTP status code)
     """
     data = request.get_json()
+    
     if not data or 'up' not in data:
-        return jsonify({"status": "error", "message": "Invalid camera speed data"}), 400
-
-    camera_speed = float(data['up'])
-    camera_speed = 0.2 if camera_speed > 0 else camera_speed * 0.4
-
+        logger.warning("Invalid camera control request: missing 'up' field")
+        return jsonify({
+            "status": "error",
+            "message": "Invalid request. Required field: 'up'"
+        }), 400
+    
     try:
+        camera_speed = float(data['up'])
+        
+        # Apply speed scaling: faster forward, slower backward
+        if camera_speed > 0:
+            camera_speed = 0.2
+        else:
+            camera_speed = camera_speed * 0.4
+        
+        # Clamp speed
+        camera_speed = max(-1.0, min(1.0, camera_speed))
+        
         if motor_c:
             motor_c.pwm(camera_speed)
-        return jsonify({"status": "success", "up/down": camera_speed})
+        
+        logger.debug(f"Camera control: speed={camera_speed:.2f}")
+        
+        return jsonify({
+            "status": "success",
+            "camera_speed": round(camera_speed, 2)
+        }), 200
+        
+    except ValueError as e:
+        logger.error(f"Invalid camera speed value: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "Invalid speed value. Must be numeric."
+        }), 400
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.error(f"Camera control error: {e}")
+        return jsonify({
+            "status": "error",
+            "message": f"Camera control failed: {str(e)}"
+        }), 500
 
 
-def run_continuous_motor():
+def run_continuous_motor() -> None:
+    """
+    Run the continuous rotation motor at a steady speed.
+    
+    This function runs in a background thread to maintain continuous rotation
+    with periodic updates.
+    """
+    logger.info("Starting continuous motor rotation")
     try:
         while True:
             if motor_b:
-                motor_b.pwm(0.15)
-            time.sleep(0.1)  # Sleep to avoid CPU overload
+                motor_b.pwm(0.15)  # 15% speed
+            time.sleep(0.1)
     except KeyboardInterrupt:
-        # This will handle manual stopping of the program with Ctrl+C
-        print("Program interrupted. Stopping motor.")
+        logger.info("Continuous motor interrupted")
+    except Exception as e:
+        logger.error(f"Error in continuous motor: {e}")
     finally:
-        # Ensure the motor is set to 0 when the program is stopped or encounters an error
         if motor_b:
             motor_b.pwm(0)
-            print("Motor stopped.")
-threading.Thread(target=run_continuous_motor, daemon=True).start()
+            logger.info("Continuous motor stopped")
+
+
+# Start continuous motor in background thread
+continuous_motor_thread = threading.Thread(
+    target=run_continuous_motor, 
+    daemon=True, 
+    name="ContinuousMotor"
+)
+continuous_motor_thread.start()

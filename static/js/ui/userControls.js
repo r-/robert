@@ -5,8 +5,8 @@ const UserControls = (() => {
     let cooldownInterval;
 
     const updateMotors = () => {
-        let leftMotor = 0;
-        let rightMotor = 0;
+        let forward = 0;  // Forward/backward movement
+        let right = 0;    // Right/left turning
         let cameramotor = 0;
 
         if (activeKeys["i"] || activeKeys["k"]) {
@@ -19,30 +19,28 @@ const UserControls = (() => {
         }
         RobotApi.sendCameraCommand(cameramotor);
 
-        // Handle horizontal movement
+        // Handle forward/backward movement
         if (activeKeys["ArrowUp"]) {
-            leftMotor += 1;
-            rightMotor += 1;
+            forward += 1;
         }
         if (activeKeys["ArrowDown"]) {
-            leftMotor -= 1;
-            rightMotor -= 1;
+            forward -= 1;
         }
+        
+        // Handle right/left turning
         if (activeKeys["ArrowLeft"]) {
-            leftMotor -= 1;
-            rightMotor += 1;
+            right -= 1;
         }
         if (activeKeys["ArrowRight"]) {
-            leftMotor += 1;
-            rightMotor -= 1;
+            right += 1;
         }
 
         // Normalize between -1 and 1
-        leftMotor = Math.max(-1, Math.min(1, leftMotor));
-        rightMotor = Math.max(-1, Math.min(1, rightMotor));
+        forward = Math.max(-1, Math.min(1, forward));
+        right = Math.max(-1, Math.min(1, right));
 
-        console.log(`Motors: Left=${leftMotor}, Right=${rightMotor}, Camera=${cameramotor}`);
-        RobotApi.sendMotorCommand(leftMotor.toString(), rightMotor.toString());
+        console.log(`Motors: Forward=${forward}, Right=${right}, Camera=${cameramotor}`);
+        RobotApi.sendMotorCommand(forward, right);
     };
 
     const bindRobotControls = () => {

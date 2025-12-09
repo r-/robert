@@ -8,6 +8,7 @@ const CommandParser = (() => {
         switch (command) {
             case "/help": return CommandHandlers.help();
             case "/say": return CommandHandlers.say(args);
+            case "/joingame": return CommandHandlers.joinGame(args);
             case "/login": return CommandHandlers.login(args);
             case "/disconnect": return CommandHandlers.disconnect(args);
             case "/check-system-status": return CommandHandlers.fetchSystemStatus();

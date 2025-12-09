@@ -1,13 +1,13 @@
 const RobotApi = (() => {
     /**
      * Sends motor speed commands to the robot server.
-     * @param {number} left - Speed for the left motor.
-     * @param {number} right - Speed for the right motor.
+     * @param {number} forward - Forward/backward speed (-1.0 to 1.0, positive = forward).
+     * @param {number} right - Right/left turning speed (-1.0 to 1.0, positive = right turn).
      */
-    const sendMotorCommand = (left, right) => {
-        console.log("Sending motor speeds:", left, right);
+    const sendMotorCommand = (forward, right) => {
+        console.log("Sending motor speeds:", { forward, right });
 
-        const data = JSON.stringify({ left, right });
+        const data = JSON.stringify({ forward, right });
 
         const xhr = new XMLHttpRequest();
         xhr.open("POST", `motors/control_motor`, true);

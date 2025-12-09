@@ -6,7 +6,7 @@ class GamepadController {
         this.changeThreshold = 0.01; // Minimum change required to send a new command
         this.smoothingFactor = 0.1; // Factor to smooth snapped signals
         this.lastAxes = { x: 0, y: 0 }; // Last processed axes values
-        this.lastMotorState = { left: 0, right: 0 }; // Last sent motor state
+        this.lastMotorState = { forward: 0, right: 0 }; // Last sent motor state
         this.analogController = true; // Assume analog until detected otherwise
         this.init();
     }
@@ -61,16 +61,21 @@ class GamepadController {
             const normalizedX = Math.abs(processedX) > this.neutralThreshold ? processedX : 0;
             const normalizedY = Math.abs(processedY) > this.neutralThreshold ? processedY : 0;
 
-            // Calculate motor speeds
-            const speedLeft = normalizedY - normalizedX; //cange operator if turn is inveted
-            const speedRight = normalizedY + normalizedX; // change operator if turn is inverted
+            // Convert from left/right motor speeds to forward/right control
+            // Original: speedLeft = normalizedY - normalizedX, speedRight = normalizedY + normalizedX
+            // Solving for normalizedY and normalizedX:
+            // normalizedY = (speedLeft + speedRight) / 2 = forward
+            // normalizedX = (speedRight - speedLeft) / 2 = right
+            
+            const forward = normalizedY;
+            const right = normalizedX;
 
             // Ensure speeds are within the range [-1, 1]
-            const clampedLeft = -Math.max(-1, Math.min(1, speedLeft));
-            const clampedRight = -Math.max(-1, Math.min(1, speedRight));
+            const clampedForward = -Math.max(-1, Math.min(1, forward));
+            const clampedRight = -Math.max(-1, Math.min(1, right));
 
             // Send command if speeds have changed significantly
-            this.sendMotorCommandIfChanged(clampedLeft, clampedRight);
+            this.sendMotorCommandIfChanged(clampedForward, clampedRight);
         });
     }
 
@@ -93,18 +98,18 @@ class GamepadController {
         return lastValue + (rawValue - lastValue) * this.smoothingFactor;
     }
 
-    sendMotorCommandIfChanged(left, right) {
-        const changeLeft = Math.abs(left - this.lastMotorState.left);
+    sendMotorCommandIfChanged(forward, right) {
+        const changeForward = Math.abs(forward - this.lastMotorState.forward);
         const changeRight = Math.abs(right - this.lastMotorState.right);
 
-        if (changeLeft > this.changeThreshold || changeRight > this.changeThreshold) {
+        if (changeForward > this.changeThreshold || changeRight > this.changeThreshold) {
             // Send the motor command to the Flask server
-            RobotApi.sendMotorCommand(left, right);
+            RobotApi.sendMotorCommand(forward, right);
 
             // Update the last motor state
-            this.lastMotorState = { left, right };
+            this.lastMotorState = { forward, right };
 
-            console.log(`🚀 Motor Command Sent: Left=${left.toFixed(2)}, Right=${right.toFixed(2)}`);
+            console.log(`🚀 Motor Command Sent: Forward=${forward.toFixed(2)}, Right=${right.toFixed(2)}`);
         }
     }
 

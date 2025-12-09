@@ -18,6 +18,73 @@ const CommandHandlers = (() => {
         }
     };
 
+    const joinGame = async (args) => {
+        if (args.length < 3) {
+            Terminal.logToTerminal("Usage: /JoinGame <server_url:port> <player_code>");
+            Terminal.logToTerminal("Example: /JoinGame localhost:3000 42");
+            return;
+        }
+
+        const serverUrl = args[1];
+        const playerCode = parseInt(args[2]);
+
+        if (isNaN(playerCode) || playerCode < 0 || playerCode > 99) {
+            Terminal.logToTerminal("❌ Player code must be between 0 and 99");
+            return;
+        }
+
+        Terminal.logToTerminal(`🔗 Connecting to Dojo server at ${serverUrl} with code ${playerCode}...`);
+
+        try {
+            // Call backend to join game
+            const response = await fetch('/dojo/status', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (!response.ok) {
+                Terminal.logToTerminal("❌ Failed to check Dojo status");
+                return;
+            }
+
+            // Store the server URL and code in the Dojo module
+            const fullUrl = serverUrl.includes('http') ? serverUrl : `http://${serverUrl}`;
+            
+            // Try to join via the JavaScript module
+            try {
+                const joinResponse = await fetch(fullUrl + '/api/player/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: playerCode })
+                });
+
+                if (joinResponse.ok) {
+                    const joinData = await joinResponse.json();
+                    const playerId = joinData.playerId || joinData.id;
+                    
+                    // Store in dojo module
+                    if (window.DojoGame) {
+                        window.DojoGame.setConnection(fullUrl, playerId, playerCode);
+                    }
+                    
+                    Terminal.logToTerminal(`✅ Successfully joined game!`);
+                    Terminal.logToTerminal(`   Player ID: ${playerId}`);
+                    Terminal.logToTerminal(`   Player Code: ${playerCode}`);
+                    Terminal.logToTerminal(`   Server: ${fullUrl}`);
+                    Terminal.logToTerminal(`\n📸 Point camera at opponent QR codes to attack them!`);
+                    Terminal.logToTerminal(`🚩 Point camera at flags (ID 0 or 1) to capture them!`);
+                } else {
+                    const error = await joinResponse.json();
+                    Terminal.logToTerminal(`❌ Failed to join: ${error.message || 'Unknown error'}`);
+                }
+            } catch (err) {
+                Terminal.logToTerminal(`❌ Connection error: ${err.message}`);
+            }
+        } catch (error) {
+            Terminal.logToTerminal(`Error: ${error}`);
+        }
+    };
+
     const login = async (args) => {
         if (args.length < 3) {
             Terminal.logToTerminal("Usage: /login <server_ip> <player_id>");
@@ -94,6 +161,7 @@ const CommandHandlers = (() => {
             <strong>Available Commands:</strong><br>
             <ul>
                 <li><strong>/help</strong> - Show the list of available commands.</li>
+                <li><strong>/JoinGame &lt;server_url:port&gt; &lt;player_code&gt;</strong> - Join a Dojo game server (code 0-99).</li>
                 <li><strong>/say message</strong> - Make the robot say something via speech synthesis.</li>
                 <li><strong>/login server_ip player_id</strong> - Log in to the game server as the specified player.</li>
                 <li><strong>/disconnect player_id</strong> - Disconnect the player from the game server.</li>
@@ -107,6 +175,7 @@ const CommandHandlers = (() => {
     }
     return {
         say,
+        joinGame,
         login,
         disconnect,
         fetchSystemStatus,
